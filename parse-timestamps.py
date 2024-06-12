@@ -14,6 +14,7 @@ with open(csv_file, 'r') as input:
 ad_label = {'Lemon'}
 chapter_label = {'Yellow', 'Red'}
 warning_label = {'Purple'}
+highlight_label = {'Blue'}
 
 #Checking for frame count, if it's higher or equal than 30 it adds a second to the timestamp, rippling the changes to minutes and hours.
 def increment_time(time_str, color):
@@ -40,6 +41,7 @@ def increment_time(time_str, color):
 chapter_markers = []
 warning_markers = []
 ad_markers = []
+highlight_markers = []
 markers = []
 
 with open(text_file, 'w') as output:
@@ -54,6 +56,14 @@ with open(text_file, 'w') as output:
         #Warning labels for the comment section are written as a set of start and end for clarity 
         if column['Color'] in warning_label:
             warning_markers.append([column['Notes'], increment_time(column['Record In'], column['Color']), '-', increment_time(column['Record Out'], column['Color'])])
+        #Highlight moments check if it's a long segment or a single marker and print it accordingly
+        if column['Color'] in highlight_label:
+            highlightIn = increment_time(column['Record In'], column['Color'])
+            highlightOut = increment_time(column['Record Out'], column['Color'])
+            if (highlightIn != highlightOut):
+                highlight_markers.append([column['Notes'], highlightIn, '-', highlightOut])
+            else: 
+                highlight_markers.append([column['Notes'], highlightIn])
 
     #Grouping markers into a single list
     if ad_markers:
@@ -62,6 +72,8 @@ with open(text_file, 'w') as output:
         markers.append(chapter_markers)
     if warning_markers:
         markers.append(warning_markers)
+    if highlight_markers:
+        markers.append(highlight_markers)
 
     #Iterating through the lists of markers and writing each row
     #It skips adding a new line once it's done with all the item lists
