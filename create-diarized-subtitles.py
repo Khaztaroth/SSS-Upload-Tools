@@ -95,7 +95,7 @@ import torch
 gc.collect(); torch.cuda.empty_cache()
 
 MODEL_OPTIONS = {
-    "whisper_arch": "distil-large-v3",
+    "whisper_arch": "large-v3",
     "device": "cuda",
     "compute_type": "float16",
     "language": "en"
@@ -136,7 +136,7 @@ model = whisperx.load_model(**MODEL_OPTIONS, asr_options=TRANS_OPTS)
 
 audio = whisperx.load_audio(source)
 print(f'>> Transcribing {audio_basename}...')
-result = model.transcribe(source, batch_size=BATCH_SIZE, chunk_size=CHUNK_SIZE, prnt_duration=True, prnt_segments=True)
+result = model.transcribe(source, batch_size=BATCH_SIZE, chunk_size=CHUNK_SIZE, print_progress=True)
 
 # Extra garbage collection
 gc.collect(); torch.cuda.empty_cache(); del model
@@ -149,13 +149,21 @@ result_aligned = whisperx.align(result["segments"], model_a, metadata, source, M
 # Setting transcription language for sentence formation
 result_aligned['language'] = MODEL_OPTIONS["language"]
 
+# Extra garbage collection
+gc.collect(); torch.cuda.empty_cache()
+
+diarize_model = whisperx.DiarizationPipeline(use_auth_token="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", device=MODEL_OPTIONS["device"])
+diarize_segments = diarize_model(source, min_speakers=2)
+
+result_diarized = whisperx.assign_word_speakers(diarize_segments, result_aligned)
+
 # Writing to disk
 from whisperx.utils import WriteSRT
 print(">> Writing SRT file")
 srt_filename = (audio_basename + ".srt")
 with open(srt_filename, "w", encoding="utf-8") as srt:
     writesrt=WriteSRT(".")  #output file directory
-    writesrt.write_result(result=result_aligned, file=srt,options={"max_line_width":None,"max_line_count":2,"highlight_words":False,"chunk_size":10})
+    writesrt.write_result(result=result_diarized, file=srt,options={"max_line_width":None,"max_line_count":2,"highlight_words":False,"chunk_size":10})
 
 # Removing segmented and re-sampled files 
 shutil.rmtree('./audio_parser')

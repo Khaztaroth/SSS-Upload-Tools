@@ -56,7 +56,7 @@ with open(text_file, 'w') as output:
         #Warning labels for the comment section are written as a set of start and end for clarity 
         if column['Color'] in warning_label:
             warning_markers.append([column['Notes'], increment_time(column['Record In'], column['Color']), '-', increment_time(column['Record Out'], column['Color'])])
-        #Highlight moments check if it's a long segment or a single marker and print it accordingly
+        #Highlighted moments work just like warnings
         if column['Color'] in highlight_label:
             highlightIn = increment_time(column['Record In'], column['Color'])
             highlightOut = increment_time(column['Record Out'], column['Color'])
