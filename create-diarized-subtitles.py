@@ -1,6 +1,7 @@
 from tkinter.filedialog import askopenfilename
 from pathlib import Path
 import os
+from dotenv import load_dotenv, dotenv_values
 
 base_file = askopenfilename()
 audio_basename = Path(base_file).stem
@@ -152,7 +153,8 @@ result_aligned['language'] = MODEL_OPTIONS["language"]
 # Extra garbage collection
 gc.collect(); torch.cuda.empty_cache()
 
-token = "TOKEN"
+load_dotenv()
+token = os.getenv("HF_TOKEN")
 
 diarize_model = whisperx.DiarizationPipeline(use_auth_token=token, device=MODEL_OPTIONS["device"])
 diarize_segments = diarize_model(source, min_speakers=2)
