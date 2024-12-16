@@ -152,7 +152,9 @@ result_aligned['language'] = MODEL_OPTIONS["language"]
 # Extra garbage collection
 gc.collect(); torch.cuda.empty_cache()
 
-diarize_model = whisperx.DiarizationPipeline(use_auth_token="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", device=MODEL_OPTIONS["device"])
+token = "TOKEN"
+
+diarize_model = whisperx.DiarizationPipeline(use_auth_token=token, device=MODEL_OPTIONS["device"])
 diarize_segments = diarize_model(source, min_speakers=2)
 
 result_diarized = whisperx.assign_word_speakers(diarize_segments, result_aligned)
